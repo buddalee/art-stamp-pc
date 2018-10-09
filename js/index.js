@@ -21,6 +21,68 @@ app.stage
   .on('pointerdown', onDragStart)
   .on('pointerup', onDragEnd)
   .on('pointerupoutside', onDragEnd);
+var texture = PIXI.Texture.fromImage('assets/1.png');
+var stamp = new PIXI.Sprite(texture);
+
+var ansNum;
+function getRandomInt(min, max) {
+  ansNum = Math.floor(Math.random() * (max - min + 1)) + min;
+  console.log('ansNum: ', ansNum);
+  return ansNum;
+}
+
+getRandomInt(1, 16);
+
+var centerArr = [];
+var xd = app.screen.width / 8;
+var yd = app.screen.height / 8;
+var startx = 0,
+    starty = 0,
+    endx = 4,
+    endy = 4;
+for (; startx < endx; startx++) {
+  for (starty = 0; starty < endy; starty++) {
+    var x = xd + starty * 2 * xd;
+    var y = yd + startx * 2 * yd;
+    console.log(x, y);
+    centerArr.push({ x, y });
+  }
+}
+
+console.log('centerArr: ', centerArr);
+
+var ansPoint = centerArr[ansNum - 1];
+console.log('ansPoint', ansPoint);
+var toloranceD = xd > yd ? xd : yd;
+console.log('toloranceD: ', toloranceD);
+renderStamp(ansPoint);
+
+var countingText = new PIXI.Text('倒數: 6', {
+  fontWeight: 'bold',
+  fontStyle: 'italic',
+  fontSize: 60,
+  fontFamily: 'Arvo',
+  fill: '#3e1707',
+  align: 'center',
+  stroke: '#a4410e',
+  strokeThickness: 7
+});
+countingText.x = app.screen.width / 2;
+countingText.y = 0;
+countingText.anchor.x = 0.5;
+app.stage.addChild(countingText);
+var count = 6;
+var isCanPlay = false;
+app.ticker.add(function() {
+    count -= 0.02;
+    // update the text with a new string
+    countingText.text = '倒數: ' + Math.floor(count);
+    if (Math.floor(count) === 0) {
+      isCanPlay = true;
+      app.stage.removeChild(countingText)
+    }
+});
+setTimeout(() => app.stage.removeChild(stamp), 5000);
 
 // 建立容器
 var objContainer = new PIXI.Container();
@@ -81,19 +143,34 @@ function onDragEnd(e) {
     y: Math.floor(e.data.global.y)
   }
   console.log('end touchPos: ', touchPos);
-  renderStamp();
+  if (isCanPlay) {
+    renderStamp(touchPos);
+  }
 }
-
-function renderStamp() {
-  var texture = PIXI.Texture.fromImage('assets/1.png');
-  var stamp = new PIXI.Sprite(texture);
+function checkAns() {
+  if (isCanPlay) {
+    validateAns(touchPos);
+  }
+}
+function validateAns(pos) {
+  const distance = Math.sqrt(Math.pow(pos.x - ansPoint.x, 2) + Math.pow(pos.y - ansPoint.y, 2));
+  console.log('distance: ', distance);
+  if (toloranceD >= distance) {
+    console.log(true);
+    alert(true);
+  } else {
+    console.log(false);
+    alert(false);
+  }
+}
+function renderStamp(target) {
   stamp.width = app.screen.height / 8;
   stamp.height = app.screen.height / 8;
   // console.log('stamp.width: ', stamp.width);
   // console.log('stamp.height: ', stamp.height);
   
-  stamp.x = touchPos.x;
-  stamp.y = touchPos.y;
+  stamp.x = target.x;
+  stamp.y = target.y;
 
   app.stage.addChild(stamp);
 
